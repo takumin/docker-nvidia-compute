@@ -15,7 +15,7 @@ ARG PIP_CACHE_PORT="3141"
 RUN echo Start! \
  && set -ex \
  && NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) \
- && APT_PACKAGES="autoconf automake libtool wget ca-certificates python python3 python-dev python3-dev python-pip python3-pip" \
+ && APT_PACKAGES="autoconf automake libtool libibverbs-dev libibmad-dev bison wget ca-certificates python python3 python-dev python3-dev python-pip python3-pip" \
  && if [ "x${NO_PROXY}" != "x" ]; then export no_proxy="${NO_PROXY}"; fi \
  && if [ "x${FTP_PROXY}" != "x" ]; then export ftp_proxy="${FTP_PROXY}"; fi \
  && if [ "x${HTTP_PROXY}" != "x" ]; then export http_proxy="${HTTP_PROXY}"; fi \
@@ -35,10 +35,12 @@ RUN echo Start! \
  && apt-get clean autoclean \
  && apt-get autoremove --purge -y \
  && rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/* \
+ && export CFLAGS=-I/usr/local/cuda/include \
+ && export LDFLAGS=-L/usr/local/cuda/lib64 \
  && wget http://mvapich.cse.ohio-state.edu/download/mvapich/mv2/mvapich2-2.2.tar.gz \
  && tar -xvf mvapich2-2.2.tar.gz \
  && cd mvapich2-2.2 \
- && ./configure --prefix=/usr --enable-cuda && make -j $NPROC && make install && ldconfig \
+ && ./configure --prefix=/usr --disable-fortran --enable-cuda && make -j $NPROC && make install && ldconfig \
  && cd / \
  && rm -fr mvapich2-2.2 \
  && rm mvapich2-2.2.tar.gz \
